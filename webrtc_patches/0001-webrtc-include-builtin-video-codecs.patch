@@ -1,0 +1,13 @@
+diff --git a/BUILD.gn b/BUILD.gn
+index 571049f3e4..34166ab196 100644
+--- a/BUILD.gn
++++ b/BUILD.gn
+@@ -519,6 +519,8 @@ if (!build_with_chromium) {
+       "api/video_codecs:video_encoder_factory_template_libvpx_vp8_adapter",
+       "api/video_codecs:video_encoder_factory_template_libvpx_vp9_adapter",
+       "api/video_codecs:video_encoder_factory_template_open_h264_adapter",
++      "api/video_codecs:builtin_video_encoder_factory",
++      "api/video_codecs:builtin_video_decoder_factory",
+       "audio",
+       "call",
+       "common_audio",
