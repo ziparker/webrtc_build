@@ -1,0 +1,81 @@
+#!/bin/bash
+
+set -e
+
+die()
+{
+    echo -e ${@}
+    exit 1
+}
+
+readonly prog="$(basename "$0")"
+
+workdir="$PWD"
+patchdir="$PWD/patches"
+ignore_error=false
+
+show_usage()
+{
+    echo "usage: $(basename $0) [-C work_dir][-h][-i][-P patch_dir]"
+    echo "OPTIONS:"
+    echo "  -C dir      change to dir prior to applying patches."
+    echo "              default: \$PWD ('$workdir')"
+    echo "  -h          show help/usage."
+    echo "  -i          ignore patch application failures."
+    echo "  -P dir      apply patches from dir."
+    echo "              default: \$PWD/patches ('$patchdir')"
+}
+
+options=$(getopt --options "C:hiP:" -- "$@")
+
+eval set -- "$options"
+while true; do
+    case "$1" in
+        -C)
+            shift
+            workdir="$(readlink -f "$1")"
+            ;;
+        -P)
+            shift
+            patchdir="$(readlink -f "$1")"
+            ;;
+        -h)
+            show_usage
+            exit 0
+            ;;
+        -i)
+            ignore_error=true
+            ;;
+        --)
+            shift
+            break
+            ;;
+    esac
+    shift
+done
+
+[ ! -d "$patchdir" ] && {
+    echo "$prog: patch dir '$patchdir' doesn't exist, so no patches to apply."
+    exit 0
+}
+
+[ ! -d "$workdir" ] && {
+    die "$prog: invalid work dir: $workdir"
+}
+
+echo "$prog: patch dir: $patchdir"
+echo "$prog: work dir: $workdir"
+
+stat=0
+
+pushd "$workdir"
+echo "$prog: applying patches to webrtc.."
+git apply "$patchdir"/*.patch || {
+    stat=$?
+    $ignore_error && echo "(ignoring patch application errors, per -i flag)"
+}
+popd
+
+$ignore_error && exit 0
+
+exit $stat
